@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "htmem",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HTML as the canonical memory and communications format for Claude Code and other AI agents. Dual-pipeline rendering, schema-validated data islands, tamper-evident SHA-256 anchor, opt-in hooks, sandboxed render server.",
   "author": {
     "name": "Ognjen Vucurevic",

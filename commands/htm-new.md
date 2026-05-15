@@ -1,6 +1,6 @@
 ---
-description: Create a new htmem HTML memory, decision doc, or comms thread. Usage — /htm-new memory "Title" | /htm-new decision "Title" | /htm-new thread "Title"
-argument-hint: <type: memory|decision|thread> "<title>"
+description: 'Create a new htmem HTML memory, decision doc, or comms thread. Usage: /htmem:htm-new memory "Title"  or  /htmem:htm-new decision "Title"  or  /htmem:htm-new thread "Title"'
+argument-hint: '<type: memory|decision|thread> "<title>"'
 ---
 
 # /htm-new — Create a new htmem artifact

@@ -10,7 +10,7 @@
 
 | Operation | When | How |
 |---|---|---|
-| **Write** | User says "save this to htmem", "create a memory/decision/thread", or invokes `/htm-new`. | Use the `htmem-write` skill (Claude Code) or call the `htmem_write` MCP tool. Never hand-write HTML — use `scripts/new_memory.py <type> "<title>"` then `Edit` the content sections. |
+| **Write** | User says "save this to htmem", "create a memory/decision/thread", or invokes `/htmem:htm-new`. | Use the `htmem-write` skill (Claude Code) or call the `htmem_write` MCP tool. Never hand-write HTML — use `scripts/new_memory.py <type> "<title>"` then `Edit` the content sections. |
 | **Read** | User references a `.html` path containing an `htmem-manifest` data island, or you need prior memory for the current task. | Use the `htmem-read` skill or the `htmem_read` MCP tool. **Never** use a raw `Read` tool — that bypasses the sanitizer. |
 | **Audit** | Before sign-off on a decision artifact, before commit, or when ingesting an artifact from an untrusted source. | Use the `htmem-audit` skill or the `htmem_audit` MCP tool. Treats CRITICAL findings as blocking. |
 
@@ -31,13 +31,13 @@ If you can't decide, default to `memory`.
 3. **Never tell the user to open an artifact via `file://`.** Always route through the render server (skill `htmem-render` / `scripts/render_server.py --serve`). The reasons are documented in `docs/threat-model.md`.
 4. **Never enable a hook the user hasn't read.** Hooks ship disabled in `hooks/hooks.json`. They run unsandboxed at the harness trust level. If the user asks for auto-snapshotting or session-start memory loading, point them at `hooks/README.md` and have them paste the recipe themselves.
 5. **Never edit an artifact without bumping `version` and re-anchoring.** Editing in place breaks the SHA-256 anchor and `htmem-audit` flags it at CRITICAL.
-6. **Refuse path arguments that contain `..`, are absolute and outside `${CLAUDE_PROJECT_DIR}`, or contain shell metachars** (`;`, `&&`, `||`, `|`, `$(`, backtick, null byte, CR, LF). The `/htm-*` commands enforce this; if you ever invoke the underlying Python directly, single-quote the path first (replace `'` with `'\''`).
+6. **Refuse path arguments that contain `..`, are absolute and outside `${CLAUDE_PROJECT_DIR}`, or contain shell metachars** (`;`, `&&`, `||`, `|`, `$(`, backtick, null byte, CR, LF). The `/htmem:htm-*` commands enforce this; if you ever invoke the underlying Python directly, single-quote the path first (replace `'` with `'\''`).
 
 ## When to write a new memory vs not
 
 | Situation | Action |
 |---|---|
-| User says "remember this" / "save to memory" / "decision doc" / uses `/htm-*` | Write an htmem artifact. |
+| User says "remember this" / "save to memory" / "decision doc" / uses `/htmem:htm-*` | Write an htmem artifact. |
 | User is mid-thought / drafting / TODO | Don't. Use the task list or chat scratch. |
 | Architectural decision is being finalized | Suggest a `decision` artifact; don't auto-write unless the user has opted in. |
 | Multi-agent handoff is happening | Suggest a `thread` artifact for the handoff record. |

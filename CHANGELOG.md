@@ -4,6 +4,14 @@ All notable changes to `htmem` are documented here. The format follows [Keep a C
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-15
+
+### Fixed
+- `commands/htm-new.md` frontmatter — the `description` field contained literal `|` pipe characters in an unquoted YAML scalar, which Claude Code's plugin loader rejected. The command silently failed to register as `htmem:htm-new`, so `/htmem:htm-new` returned "Unknown command" while every other command loaded. Description is now single-quoted and uses `or` instead of pipes. (Reported by first install attempt.)
+
+### Docs
+- README, AGENTS.md, and the landing page (docs/index.html) now show the namespaced form `/htmem:htm-new`, `/htmem:htm-read`, `/htmem:htm-render`, `/htmem:htm-audit`, `/htmem:htm-hub` — matching how Claude Code actually exposes plugin slash commands. The un-prefixed form `/htm-new` is not a thing.
+
 ## [0.1.0] - 2026-05-15
 
 Initial public release.

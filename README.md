@@ -8,7 +8,7 @@
 
 * **One file per memory.** Self-contained — no external CSS, no external scripts, no CDN.
 * **Dual pipeline.** LLM-read view runs through a default-deny sanitizer + JSON Schema validator + `<untrusted_content>` sentinel wrapper. Human-render view is served by a CSP-hardened localhost server inside an iframe sandbox.
-* **Anchor-signed.** Every artifact carries a SHA-256 anchor of its canonical content. Editing without bumping `version` and re-anchoring is flagged by `/htm-audit`.
+* **Anchor-signed.** Every artifact carries a SHA-256 anchor of its canonical content. Editing without bumping `version` and re-anchoring is flagged by `/htmem:htm-audit`.
 * **Zero runtime dependencies.** Stdlib-only Python. No npm, no pip wheels, no CDN. Read every line of code before installing.
 * **Hooks off by default.** No PostToolUse / SessionStart / PreToolUse hooks fire until you opt in by reading the recipe in `hooks/README.md` and pasting it into `hooks/hooks.json` yourself.
 * **MCP cross-agent.** Bundled stdio MCP server exposes htmem artifacts as `htmem://...` resources for ChatGPT desktop, Cursor, Cline, Continue, and any other MCP-aware agent.
@@ -26,17 +26,17 @@ Always install by tag (`@v0.1.0`), not from bare `main`. The plugin code runs on
 
 ```text
 # Create a canonical decision artifact
-> /htm-new decision "Switch our caching layer from Redis to in-memory LRU"
+> /htmem:htm-new decision "Switch our caching layer from Redis to in-memory LRU"
 
 # Open it in a sandboxed browser view
-> /htm-render htmem/decision-switch-our-caching-layer-2026-05-15.html
+> /htmem:htm-render htmem/decision-switch-our-caching-layer-2026-05-15.html
 
 # Audit before commit
-> /htm-audit htmem/
+> /htmem:htm-audit htmem/
 
 # In a future session, ask Claude what was decided
 > what's in htmem/decision-switch-our-caching-layer-2026-05-15.html
-# (auto-routes to /htm-read; runs sanitizer + anchor verify + schema check)
+# (auto-routes to /htmem:htm-read; runs sanitizer + anchor verify + schema check)
 ```
 
 ## Why HTML, why now
@@ -56,7 +56,7 @@ The "HTML is the new Markdown" thesis crystallized in May 2026 after Thariq Shih
 | Component | Purpose | Lines |
 |---|---|---|
 | 4 skills | `htmem-write`, `htmem-read`, `htmem-render`, `htmem-audit` — narrow auto-trigger only on explicit `/htm-*` or literal "htmem" mentions. | ~300 each |
-| 5 slash commands | `/htm-new`, `/htm-read`, `/htm-render`, `/htm-audit`, `/htm-hub` — each with explicit `$ARGUMENTS` quoting and shell-metachar refusal. | ~30 each |
+| 5 slash commands | `/htmem:htm-new`, `/htmem:htm-read`, `/htmem:htm-render`, `/htmem:htm-audit`, `/htmem:htm-hub` — each with explicit `$ARGUMENTS` quoting and shell-metachar refusal. | ~30 each |
 | 3 HTML templates | `memory.html`, `decision.html`, `thread.html` — semantic landmarks, `@layer` CSS, `light-dark()` tokens, no JS, no external resources. | ~250 each |
 | 5 JSON Schemas | `memory`, `decision`, `thread`, `identity`, `llm-onboarding` — bounded `maxLength` / `maxItems` + `not`-based zero-width rejection. | ~80 each |
 | Python boundary | `anchor.py`, `sanitize.py`, `schema_validator.py`, `validate.py`, `read_memory.py`, `audit.py`, `new_memory.py`, `render_server.py` — zero deps. | ~150–500 each |
@@ -126,7 +126,7 @@ See [`examples/`](examples/) for fully-rendered artifacts:
 * [`examples/02-decision-doc.html`](examples/02-decision-doc.html) — architecture decision record with sign-off ledger.
 * [`examples/03-comms-thread.html`](examples/03-comms-thread.html) — multi-agent handoff record.
 
-Run `/htm-hub examples` after installing the plugin to view all three in the hardened render server.
+Run `/htmem:htm-hub examples` after installing the plugin to view all three in the hardened render server.
 
 ## Related work and prior art
 

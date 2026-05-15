@@ -324,12 +324,12 @@
         <div class="grid-2 mt-md">
           <div class="card blue">
             <h4>3. Create your first memory</h4>
-            <pre><code>/htm-new memory "Why we picked Redis"</code></pre>
+            <pre><code>/htmem:htm-new memory "Why we picked Redis"</code></pre>
             <p class="muted mt-sm">Claude scaffolds, fills in body, anchors with SHA-256.</p>
           </div>
           <div class="card blue">
             <h4>4. View it safely in a browser</h4>
-            <pre><code>/htm-render htmem/memory-why-we-picked-redis-2026-05-15.html</code></pre>
+            <pre><code>/htmem:htm-render htmem/memory-why-we-picked-redis-2026-05-15.html</code></pre>
             <p class="muted mt-sm">Opens via a CSP-hardened localhost server inside a sandboxed iframe.</p>
           </div>
         </div>
@@ -422,7 +422,7 @@
         <h2 id="inv-h">What ships in v0.1.0</h2>
         <div class="grid-3">
           <div class="card accent"><h4>4 skills</h4><p class="muted">htmem-write · htmem-read · htmem-render · htmem-audit. Narrow auto-trigger only on explicit <code>/htm-*</code>, literal "htmem", or referenced paths.</p></div>
-          <div class="card accent"><h4>5 slash commands</h4><p class="muted">/htm-new · /htm-read · /htm-render · /htm-audit · /htm-hub. Each enforces <code>$ARGUMENTS</code> single-quoting and refuses shell metachars.</p></div>
+          <div class="card accent"><h4>5 slash commands</h4><p class="muted">/htmem:htm-new · /htm-read · /htmem:htm-render · /htm-audit · /htm-hub. Each enforces <code>$ARGUMENTS</code> single-quoting and refuses shell metachars.</p></div>
           <div class="card accent"><h4>3 HTML templates</h4><p class="muted">memory · decision · thread. Modern CSS (<code>@layer</code>, <code>light-dark()</code>). Inert JSON / JSON-LD / text-plain data islands. No JS.</p></div>
           <div class="card blue"><h4>5 JSON schemas</h4><p class="muted">memory · decision · thread · identity · llm-onboarding. <code>$defs.safeText</code> rejects BMP zero-width / RTL-override / format / BOM chars.</p></div>
           <div class="card blue"><h4>8 Python scripts</h4><p class="muted">anchor · sanitize · schema_validator · validate · read_memory · audit · new_memory · render_server. Python 3.10+ stdlib only.</p></div>
