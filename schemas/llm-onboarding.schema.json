@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/droggy992/htmem/schemas/llm-onboarding.schema.json",
+  "title": "htmem LLM onboarding block",
+  "description": "Plain-text block that an LLM reading this artifact uses to bootstrap. Must not contain executable instructions for the LLM beyond 'how to interpret this file'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["what_is_this", "when_to_use", "first_action", "never_do", "source_of_truth"],
+  "properties": {
+    "what_is_this": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 480,
+      "description": "One sentence describing the artifact."
+    },
+    "when_to_use": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 480,
+      "description": "One sentence describing what tasks should load this as context."
+    },
+    "first_action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "description": "What the agent should do first when this loads — usually 'verify the anchor' or 'read the manifest'."
+    },
+    "never_do": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 480,
+      "description": "What the agent must never do based on this file — defends against indirect prompt injection."
+    },
+    "source_of_truth": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 480,
+      "description": "Where the canonical source lives (file path, URL, repo)."
+    }
+  }
+}

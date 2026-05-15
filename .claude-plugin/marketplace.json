@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "htmem-plugins",
+  "description": "htmem — HTML as the canonical memory and communications format for Claude Code and other AI agents.",
+  "owner": {
+    "name": "Ognjen Vucurevic",
+    "email": "ognjen.vucurevic@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "htmem",
+      "source": "./",
+      "description": "Teach Claude Code (and any MCP-aware agent) to use single-file HTML as persistent memory and inter-agent comms. Dual-pipeline rendering: sanitized LLM-read view + sandboxed human-render view. Schema-validated JSON data islands. Tamper-evident SHA-256 anchor. Zero runtime deps.",
+      "homepage": "https://droggy992.github.io/htmem/",
+      "repository": "https://github.com/droggy992/htmem",
+      "license": "Apache-2.0",
+      "keywords": [
+        "claude-code",
+        "claude-code-plugin",
+        "anthropic",
+        "html",
+        "memory",
+        "context-engineering",
+        "agent-comms",
+        "mcp",
+        "llm-tooling",
+        "security"
+      ],
+      "category": "productivity",
+      "tags": ["memory", "html", "mcp", "context", "agents"]
+    }
+  ]
+}

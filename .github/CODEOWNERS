@@ -1,0 +1,23 @@
+# Code owners — security-critical paths require explicit review before merge.
+
+# Catch-all (default reviewer)
+*                       @droggy992
+
+# Plugin manifest and marketplace catalog (canonical install surface)
+/.claude-plugin/        @droggy992
+
+# Hooks (run unsandboxed at harness trust level)
+/hooks/                 @droggy992
+
+# CI / workflows (can grant tokens)
+/.github/               @droggy992
+
+# Security boundary (sanitizer, render server, MCP server, anchor)
+/scripts/sanitize.py    @droggy992
+/scripts/render_server.py  @droggy992
+/scripts/anchor.py      @droggy992
+/mcp/                   @droggy992
+
+# Public security policy
+/SECURITY.md            @droggy992
+/LICENSE                @droggy992

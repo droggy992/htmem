@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/droggy992/htmem/schemas/identity.schema.json",
+  "title": "htmem identity block",
+  "description": "Subset of the manifest covering only identity fields — used for indexing and cross-artifact reference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["htmem_version", "id", "type", "title", "version", "created", "updated", "author"],
+  "properties": {
+    "htmem_version": {"type": "string", "const": "0.1"},
+    "id": {"type": "string", "pattern": "^[a-zA-Z0-9_-]{8,64}$"},
+    "type": {"type": "string", "enum": ["memory", "decision", "thread"]},
+    "title": {"type": "string", "minLength": 1, "maxLength": 240},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][a-zA-Z0-9.-]+)?$"},
+    "created": {"type": "string", "format": "date-time"},
+    "updated": {"type": "string", "format": "date-time"},
+    "author": {"type": "string", "minLength": 1, "maxLength": 200},
+    "anchor": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  }
+}

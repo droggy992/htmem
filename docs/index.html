@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="htmem — HTML as canonical LLM memory and inter-agent communications. A Claude Code plugin and MCP server. Anchor-signed. Schema-validated. Sanitized. Zero runtime deps. Apache-2.0.">
+  <meta name="theme-color" content="#a63329">
+  <meta property="og:title" content="htmem — HTML as canonical LLM memory">
+  <meta property="og:description" content="A Claude Code plugin (and MCP server) that teaches AI agents to use single-file HTML as persistent memory and inter-agent communication. Anchor-signed, schema-validated, sanitized before any LLM reads it. Apache-2.0.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://droggy992.github.io/htmem/">
+  <title>htmem — HTML as canonical LLM memory</title>
+  <style>
+    @layer reset, tokens, base, layout, components, utilities;
+
+    @layer reset {
+      *, *::before, *::after { box-sizing: border-box; }
+      *:not(dialog) { margin: 0; }
+      body { min-height: 100vh; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+      h1, h2, h3, h4 { line-height: 1.15; text-wrap: balance; }
+      p { text-wrap: pretty; overflow-wrap: break-word; }
+      img, svg { display: block; max-width: 100%; }
+      :target { scroll-margin-block: 5ex; }
+    }
+    @layer tokens {
+      :root {
+        color-scheme: light dark;
+        --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+        --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+        --text-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.8rem);
+        --text-sm: clamp(0.85rem, 0.82rem + 0.15vw, 0.95rem);
+        --text-base: clamp(1rem, 0.94rem + 0.3vw, 1.1rem);
+        --text-lg: clamp(1.15rem, 1.05rem + 0.5vw, 1.4rem);
+        --text-xl: clamp(1.4rem, 1.2rem + 1vw, 1.85rem);
+        --text-2xl: clamp(1.7rem, 1.3rem + 2vw, 2.5rem);
+        --text-3xl: clamp(2.2rem, 1.5rem + 3vw, 3.5rem);
+
+        --space-xs: 0.5rem;
+        --space-sm: 0.75rem;
+        --space-md: 1.25rem;
+        --space-lg: 2rem;
+        --space-xl: 3rem;
+        --space-2xl: 5rem;
+
+        --color-bg: light-dark(#fafaf7, #0d1117);
+        --color-bg-elev: light-dark(#ffffff, #161b22);
+        --color-bg-soft: light-dark(#f4f2eb, #1c2128);
+        --color-text: light-dark(#1a1a1a, #e6e1d3);
+        --color-muted: light-dark(#5a5a55, #9098a0);
+        --color-rule: light-dark(#e6e3da, #30363d);
+        --color-accent: light-dark(#a63329, #f59e0b);
+        --color-accent-soft: light-dark(#fbeae6, #3a2a10);
+        --color-blue: light-dark(#1d4d8a, #58a6ff);
+        --color-green: light-dark(#0d6e5a, #4dbfa3);
+        --color-purple: light-dark(#6e2a8e, #b478e0);
+        --color-red: light-dark(#9b2222, #f97583);
+        --color-yellow: light-dark(#8a6500, #ecc94b);
+
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 14px;
+      }
+    }
+    @layer base {
+      body {
+        font-family: var(--sans);
+        font-size: var(--text-base);
+        background: var(--color-bg);
+        color: var(--color-text);
+      }
+      a { color: var(--color-accent); text-underline-offset: 3px; }
+      code, kbd, pre { font-family: var(--mono); font-size: 0.9em; }
+      pre {
+        overflow-x: auto;
+        padding: var(--space-md);
+        background: var(--color-bg-elev);
+        border: 1px solid var(--color-rule);
+        border-radius: var(--radius-md);
+      }
+      :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+      table { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+      th, td {
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+        border-bottom: 1px solid var(--color-rule);
+        vertical-align: top;
+      }
+      th { font-weight: 600; color: var(--color-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; }
+    }
+    @layer layout {
+      .container { max-width: 76rem; margin-inline: auto; padding-inline: var(--space-md); }
+      .prose { max-width: 64ch; }
+      .nav { padding-block: var(--space-md); border-bottom: 1px solid var(--color-rule); display: flex; gap: var(--space-md); align-items: center; justify-content: space-between; }
+      section { padding-block: var(--space-xl); border-top: 1px solid var(--color-rule); }
+      section:first-of-type { border-top: 0; padding-block: var(--space-2xl) var(--space-xl); }
+      .grid-2 { display: grid; gap: var(--space-md); grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+      .grid-3 { display: grid; gap: var(--space-md); grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+      .grid-4 { display: grid; gap: var(--space-md); grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+    }
+    @layer components {
+      .nav-brand { font-family: var(--serif); font-size: var(--text-lg); font-weight: 600; }
+      .nav-links { display: flex; gap: var(--space-md); flex-wrap: wrap; font-size: var(--text-sm); }
+      .nav-links a { color: var(--color-muted); text-decoration: none; }
+      .nav-links a:hover, .nav-links a:focus-visible { color: var(--color-accent); }
+      .eyebrow {
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 700;
+        color: var(--color-accent);
+        margin-bottom: var(--space-sm);
+      }
+      h1.hero-title {
+        font-family: var(--serif);
+        font-size: var(--text-3xl);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        max-width: 24ch;
+      }
+      p.hero-lede {
+        font-family: var(--serif);
+        font-size: var(--text-xl);
+        color: var(--color-muted);
+        max-width: 60ch;
+        margin-top: var(--space-md);
+      }
+      h2 {
+        font-family: var(--serif);
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+        max-width: 32ch;
+      }
+      h3 {
+        font-family: var(--sans);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-muted);
+        margin-bottom: var(--space-sm);
+      }
+      h4 {
+        font-family: var(--sans);
+        font-size: var(--text-base);
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+      }
+      .cta-row { display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-lg); }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        padding: 0.7em 1.4em;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid currentColor;
+        font-size: var(--text-base);
+      }
+      .btn-primary { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
+      .btn-primary:hover, .btn-primary:focus-visible { filter: brightness(1.1); }
+      .btn-ghost { color: var(--color-text); border-color: var(--color-rule); background: var(--color-bg-elev); }
+      .btn-ghost:hover, .btn-ghost:focus-visible { border-color: var(--color-accent); color: var(--color-accent); }
+      .card {
+        background: var(--color-bg-elev);
+        border: 1px solid var(--color-rule);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+      }
+      .card.accent { border-left: 4px solid var(--color-accent); }
+      .card.blue { border-left: 4px solid var(--color-blue); }
+      .card.green { border-left: 4px solid var(--color-green); }
+      .card.yellow { border-left: 4px solid var(--color-yellow); }
+      .badge {
+        display: inline-block;
+        padding: 0.15em 0.6em;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        font-size: var(--text-xs);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        color: var(--color-accent);
+      }
+      .stat {
+        font-family: var(--serif);
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        line-height: 1;
+        color: var(--color-accent);
+      }
+      .stat-label {
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-muted);
+        margin-top: 0.3em;
+      }
+      .file-tree {
+        font-family: var(--mono);
+        font-size: var(--text-sm);
+        background: var(--color-bg-elev);
+        border: 1px solid var(--color-rule);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        overflow-x: auto;
+      }
+      .file-tree .dir { color: var(--color-accent); font-weight: 600; }
+      .file-tree .note { color: var(--color-muted); font-style: italic; }
+      .star-banner {
+        padding: var(--space-lg);
+        border-radius: var(--radius-lg);
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-accent);
+        text-align: center;
+      }
+      .star-banner h2 { margin-inline: auto; max-width: 28ch; }
+      footer.site-footer {
+        padding-block: var(--space-lg);
+        border-top: 1px solid var(--color-rule);
+        font-size: var(--text-sm);
+        color: var(--color-muted);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--space-md);
+      }
+      .skip-link {
+        position: absolute; top: 0; left: 50%;
+        transform: translateX(-50%) translateY(-200%);
+        background: var(--color-accent); color: var(--color-bg);
+        padding: 0.6em 1.2em; font-weight: 600;
+        z-index: 10000; text-decoration: none;
+      }
+      .skip-link:focus { transform: translateX(-50%) translateY(0); }
+    }
+    @layer utilities {
+      .muted { color: var(--color-muted); }
+      .center { text-align: center; }
+      .mt-xs { margin-top: var(--space-xs); }
+      .mt-sm { margin-top: var(--space-sm); }
+      .mt-md { margin-top: var(--space-md); }
+      .mt-lg { margin-top: var(--space-lg); }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="container">
+
+    <nav class="nav" aria-label="primary">
+      <div class="nav-brand">htmem</div>
+      <div class="nav-links">
+        <a href="#install">Install</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#security">Security</a>
+        <a href="#inventory">What ships</a>
+        <a href="https://github.com/droggy992/htmem">GitHub</a>
+      </div>
+    </nav>
+
+    <main id="main" tabindex="-1">
+
+      <section aria-labelledby="hero-h">
+        <p class="eyebrow">claude code plugin · v0.1.0 · apache-2.0</p>
+        <h1 id="hero-h" class="hero-title">HTML as canonical LLM memory and inter-agent comms.</h1>
+        <p class="hero-lede">A Claude Code plugin (and MCP server) that teaches AI agents to write and read single-file HTML as persistent memory across sessions. Anchor-signed. Schema-validated. Sanitized before any LLM reads it. Three independent audit loops. Zero runtime dependencies.</p>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#install">Install in 2 commands</a>
+          <a class="btn btn-ghost" href="https://github.com/droggy992/htmem" aria-label="View on GitHub">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+
+        <div class="grid-4 mt-lg">
+          <div><div class="stat">4</div><div class="stat-label">skills</div></div>
+          <div><div class="stat">5</div><div class="stat-label">slash commands</div></div>
+          <div><div class="stat">3</div><div class="stat-label">audit loops</div></div>
+          <div><div class="stat">0</div><div class="stat-label">runtime deps</div></div>
+        </div>
+      </section>
+
+      <section aria-labelledby="why-h">
+        <p class="eyebrow">section · 1</p>
+        <h2 id="why-h">Why HTML, why now</h2>
+        <div class="prose">
+          <p>The "HTML is the new Markdown for LLM I/O" thesis crystallized in May 2026 after <a href="https://thariqs.github.io/html-effectiveness/">Thariq Shihipar's <em>Unreasonable Effectiveness of HTML</em></a> and <a href="https://simonwillison.net/2026/May/8/unreasonable-effectiveness-of-html/">Simon Willison's permalink endorsement</a>. The defensible reading isn't "HTML beats Markdown everywhere" — it's <strong>bifurcated by direction</strong>:</p>
+        </div>
+        <table class="mt-md" aria-describedby="why-h">
+          <thead><tr><th>Direction</th><th>Best format</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Agent → human (outputs, decisions, artifacts)</td><td><strong>HTML</strong></td><td>Diagrams, tables, hierarchy, links, interactivity — Markdown flattens all of it.</td></tr>
+            <tr><td>Agent → agent (context, retrieval, RAG)</td><td><strong>HTML with structured data islands</strong></td><td><a href="https://arxiv.org/abs/2411.02959">HtmlRAG (Tan et al., Nov 2024)</a> shows HTML beats plain-text on six QA benchmarks because heading and table structure survive.</td></tr>
+            <tr><td>System → agent (tables, configs)</td><td><strong>Markdown-KV or YAML</strong></td><td><a href="https://www.improvingagents.com/blog/best-input-data-format-for-llms/">Improving Agents 2025</a> benchmarks show MD-KV at 60.7 % vs HTML at 53.6 % on tabular tasks.</td></tr>
+          </tbody>
+        </table>
+        <p class="muted mt-md prose"><code>htmem</code> is built for the first two. For the third (config files, table input), keep using Markdown.</p>
+      </section>
+
+      <section id="install" aria-labelledby="install-h">
+        <p class="eyebrow">section · 2</p>
+        <h2 id="install-h">Install</h2>
+        <div class="grid-2 mt-md">
+          <div class="card accent">
+            <h4>1. Add the marketplace</h4>
+            <pre><code>/plugin marketplace add droggy992/htmem@v0.1.0</code></pre>
+            <p class="muted mt-sm">Always pin by tag, never bare <code>main</code>. The plugin code runs on your machine; you should be able to read every line you're trusting.</p>
+          </div>
+          <div class="card accent">
+            <h4>2. Install the plugin</h4>
+            <pre><code>/plugin install htmem@htmem-plugins --scope user</code></pre>
+            <p class="muted mt-sm">User scope writes to <code>~/.claude/settings.json</code>.</p>
+          </div>
+        </div>
+        <div class="grid-2 mt-md">
+          <div class="card blue">
+            <h4>3. Create your first memory</h4>
+            <pre><code>/htm-new memory "Why we picked Redis"</code></pre>
+            <p class="muted mt-sm">Claude scaffolds, fills in body, anchors with SHA-256.</p>
+          </div>
+          <div class="card blue">
+            <h4>4. View it safely in a browser</h4>
+            <pre><code>/htm-render htmem/memory-why-we-picked-redis-2026-05-15.html</code></pre>
+            <p class="muted mt-sm">Opens via a CSP-hardened localhost server inside a sandboxed iframe.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture" aria-labelledby="arch-h">
+        <p class="eyebrow">section · 3</p>
+        <h2 id="arch-h">Architecture — one file, two pipelines</h2>
+        <p class="muted prose">A single htmem file feeds two physically separate pipelines: one for LLMs (sanitize + verify + sentinel-wrap), one for humans (CSP-hardened iframe sandbox). They never share rendering code, so a bypass in one pipeline can't compromise the other. This is a direct response to CamoLeak (CVE-2025-59145) and CVE-2026-22813.</p>
+
+        <svg viewBox="0 0 900 480" role="img" aria-label="Architecture diagram: htmem file fans out to two independent pipelines" style="margin-top: var(--space-md); max-width: 100%; height: auto;">
+          <style>
+            .lbl { font-family: system-ui, sans-serif; font-size: 13px; fill: currentColor; }
+            .lbl-sm { font-family: system-ui, sans-serif; font-size: 11px; fill: var(--color-muted); }
+            .lbl-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; fill: currentColor; }
+            .box-bg { fill: var(--color-bg-elev); stroke: var(--color-rule); stroke-width: 1.5; }
+            .box-acc { fill: var(--color-bg-elev); stroke: var(--color-accent); stroke-width: 2; }
+            .box-blue { fill: var(--color-bg-elev); stroke: var(--color-blue); stroke-width: 2; }
+            .box-green { fill: var(--color-bg-elev); stroke: var(--color-green); stroke-width: 2; }
+            .arrow { stroke: var(--color-muted); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+          </style>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="var(--color-muted)" />
+            </marker>
+          </defs>
+          <rect x="350" y="20" width="200" height="60" rx="8" class="box-acc"/>
+          <text x="450" y="48" class="lbl" text-anchor="middle" font-weight="600">htmem file (.html)</text>
+          <text x="450" y="65" class="lbl-sm" text-anchor="middle">single self-contained, anchor-signed</text>
+          <line x1="450" y1="80" x2="220" y2="130" class="arrow"/>
+          <line x1="450" y1="80" x2="680" y2="130" class="arrow"/>
+          <rect x="20" y="130" width="400" height="280" rx="8" class="box-blue"/>
+          <text x="220" y="155" class="lbl" text-anchor="middle" font-weight="700" fill="var(--color-blue)">LLM-read pipeline</text>
+          <text x="220" y="172" class="lbl-sm" text-anchor="middle">read_memory.py</text>
+          <rect x="40" y="190" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="55" y="210" class="lbl-mono">1. sanitize  (default-deny allow-list)</text>
+          <rect x="40" y="228" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="55" y="248" class="lbl-mono">2. NFKC + strip Cf + tag-block U+E0000-U+E007F</text>
+          <rect x="40" y="266" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="55" y="286" class="lbl-mono">3. anchor verify  (sha256 canonical)</text>
+          <rect x="40" y="304" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="55" y="324" class="lbl-mono">4. JSON-Schema validate  (manifest)</text>
+          <rect x="40" y="342" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="55" y="362" class="lbl-mono">5. wrap &lt;untrusted_content&gt; sentinels</text>
+          <text x="220" y="400" class="lbl-sm" text-anchor="middle" font-weight="600">→ structured JSON to the model</text>
+          <rect x="480" y="130" width="400" height="280" rx="8" class="box-green"/>
+          <text x="680" y="155" class="lbl" text-anchor="middle" font-weight="700" fill="var(--color-green)">Human-render pipeline</text>
+          <text x="680" y="172" class="lbl-sm" text-anchor="middle">render_server.py</text>
+          <rect x="500" y="190" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="515" y="210" class="lbl-mono">1. bind 127.0.0.1 only  · random high port</text>
+          <rect x="500" y="228" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="515" y="248" class="lbl-mono">2. 128-bit URL token (secrets.compare_digest)</text>
+          <rect x="500" y="266" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="515" y="286" class="lbl-mono">3. strict CSP + COOP + COEP headers</text>
+          <rect x="500" y="304" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="515" y="324" class="lbl-mono">4. &lt;iframe sandbox&gt; without allow-scripts</text>
+          <rect x="500" y="342" width="360" height="32" rx="6" class="box-bg"/>
+          <text x="515" y="362" class="lbl-mono">5. Host header allow-list  · idle exit 15 min</text>
+          <text x="680" y="400" class="lbl-sm" text-anchor="middle" font-weight="600">→ rendered page in the user's browser</text>
+          <text x="450" y="450" class="lbl-sm" text-anchor="middle">Same file. Two pipelines. Two threat models. No shared rendering code.</text>
+        </svg>
+      </section>
+
+      <section id="security" aria-labelledby="security-h">
+        <p class="eyebrow">section · 4</p>
+        <h2 id="security-h">Security defenses — what's protected, by what</h2>
+        <table aria-describedby="security-h">
+          <thead>
+            <tr><th>Threat</th><th>Adversary</th><th>Primary defense</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Indirect prompt injection via free-text fields</td><td>repo-fork attacker</td><td>schema-level zero-width reject, sanitizer Cf+tag-block strip, <code>&lt;untrusted_content&gt;</code> sentinel wrap</td></tr>
+            <tr><td>Indirect prompt injection via HTML comments / hidden meta</td><td>artifact author</td><td>sanitizer drops every comment; meta name allow-list of 10; audit A07 flags instruction-shaped comments at CRITICAL</td></tr>
+            <tr><td>Forged manifest smuggled inside <code>&lt;applet&gt;</code>/<code>&lt;embed&gt;</code>/<code>&lt;base&gt;</code></td><td>artifact author</td><td>sanitizer refuses to capture data islands when any DANGEROUS_TAG is seen; validator counts manifest scripts</td></tr>
+            <tr><td>Local XSS via inline script / <code>on*=</code> / <code>javascript:</code> URL</td><td>artifact author</td><td>default-deny tag allow-list; <code>on*=</code> strip; URL-scheme allow-list; iframe sandbox without <code>allow-scripts</code></td></tr>
+            <tr><td>CSS-based exfiltration (<code>url()</code>, <code>@import</code>, <code>expression()</code>)</td><td>artifact author</td><td>sanitizer drops <code>&lt;style&gt;</code> body if dangerous tokens; audit A05 scan</td></tr>
+            <tr><td>Anchor tampering</td><td>repo-fork attacker</td><td>SHA-256 canonicalization zeroes meta content + literal hashes + manifest anchor field</td></tr>
+            <tr><td>Render-server token leak in logs</td><td>local co-tenant</td><td>regex redact <code>?t=&lt;token&gt;</code> → <code>t=REDACTED</code> before write</td></tr>
+            <tr><td>Render-server path traversal via symlink</td><td>repo-fork attacker</td><td>cross-platform <code>..</code> and <code>\</code> normalization; explicit <code>is_symlink()</code> refusal in render server <em>and</em> MCP server</td></tr>
+            <tr><td>Skill auto-trigger coercion</td><td>prompt-injection attacker</td><td>narrow trigger description: only <code>/htm-*</code> or literal "htmem"; no Bash in htmem-write; no Read in htmem-read</td></tr>
+            <tr><td>Hook RCE via plugin update</td><td>supply-chain attacker</td><td>hooks ship OFF by default; opt-in only; CODEOWNERS gates <code>hooks/</code>; CI fails on malformed hooks.json</td></tr>
+            <tr><td>Allocator DoS via giant data island</td><td>artifact author</td><td>10 MB file cap; 1 MB per-island cap; 10000-file walk cap</td></tr>
+          </tbody>
+        </table>
+        <p class="muted mt-md prose">Full threat model: <a href="https://github.com/droggy992/htmem/blob/main/docs/threat-model.md">docs/threat-model.md</a>. Vulnerability disclosure policy: <a href="https://github.com/droggy992/htmem/blob/main/SECURITY.md">SECURITY.md</a> (72-hour ack, 30-day fix SLA for HIGH/CRITICAL).</p>
+      </section>
+
+      <section id="inventory" aria-labelledby="inv-h">
+        <p class="eyebrow">section · 5</p>
+        <h2 id="inv-h">What ships in v0.1.0</h2>
+        <div class="grid-3">
+          <div class="card accent"><h4>4 skills</h4><p class="muted">htmem-write · htmem-read · htmem-render · htmem-audit. Narrow auto-trigger only on explicit <code>/htm-*</code>, literal "htmem", or referenced paths.</p></div>
+          <div class="card accent"><h4>5 slash commands</h4><p class="muted">/htm-new · /htm-read · /htm-render · /htm-audit · /htm-hub. Each enforces <code>$ARGUMENTS</code> single-quoting and refuses shell metachars.</p></div>
+          <div class="card accent"><h4>3 HTML templates</h4><p class="muted">memory · decision · thread. Modern CSS (<code>@layer</code>, <code>light-dark()</code>). Inert JSON / JSON-LD / text-plain data islands. No JS.</p></div>
+          <div class="card blue"><h4>5 JSON schemas</h4><p class="muted">memory · decision · thread · identity · llm-onboarding. <code>$defs.safeText</code> rejects BMP zero-width / RTL-override / format / BOM chars.</p></div>
+          <div class="card blue"><h4>8 Python scripts</h4><p class="muted">anchor · sanitize · schema_validator · validate · read_memory · audit · new_memory · render_server. Python 3.10+ stdlib only.</p></div>
+          <div class="card blue"><h4>1 MCP server</h4><p class="muted">Stdio JSON-RPC bridge. Exposes <code>htmem://&lt;path&gt;</code> resources + <code>htmem_read</code> / <code>htmem_audit</code> / <code>htmem_list</code> tools.</p></div>
+          <div class="card green"><h4>Opt-in hooks</h4><p class="muted"><code>hooks/hooks.json</code> ships <strong>empty</strong>. Three vetted recipes: PostToolUse snapshot · SessionStart digest · PreToolUse signed-decision gate.</p></div>
+          <div class="card green"><h4>2 regression tests</h4><p class="muted">G01 forged-manifest-under-dropped-subtree (7 vectors) · V18 multi-manifest-smuggling. Stdlib only, wired into CI.</p></div>
+          <div class="card green"><h4>CI stack</h4><p class="muted">gitleaks · CodeQL · Semgrep (OWASP Top 10 + python + security-audit) · trufflehog · plugin-validate · end-to-end smoke + regression tests. Dependabot weekly.</p></div>
+        </div>
+      </section>
+
+      <section aria-labelledby="files-h">
+        <p class="eyebrow">section · 6</p>
+        <h2 id="files-h">What's in the repo</h2>
+        <pre class="file-tree">
+<span class="dir">htmem/</span>
+├── <span class="dir">.claude-plugin/</span>      <span class="note">marketplace.json + plugin.json</span>
+├── <span class="dir">.github/</span>             <span class="note">CODEOWNERS, dependabot, workflows/ci.yml</span>
+├── <span class="dir">commands/</span>            <span class="note">5 slash commands</span>
+├── <span class="dir">docs/</span>                <span class="note">format-spec · threat-model · design-rationale · index.html</span>
+├── <span class="dir">examples/</span>            <span class="note">3 anchor-verified artifacts (memory, decision, thread)</span>
+├── <span class="dir">hooks/</span>               <span class="note">empty hooks.json + README + 3 opt-in script recipes</span>
+├── <span class="dir">mcp/</span>                 <span class="note">stdio MCP server</span>
+├── <span class="dir">schemas/</span>             <span class="note">5 JSON Schemas</span>
+├── <span class="dir">scripts/</span>             <span class="note">anchor · sanitize · schema_validator · validate · read · audit · new · render</span>
+├── <span class="dir">skills/</span>              <span class="note">4 narrow-trigger SKILL.md files</span>
+├── <span class="dir">templates/</span>           <span class="note">memory · decision · thread</span>
+├── <span class="dir">tests/</span>               <span class="note">2 regression tests, no framework</span>
+├── .gitignore  .gitleaks.toml  .mcp.json
+├── CHANGELOG.md  CONTRIBUTING.md  LICENSE
+├── README.md  SECURITY.md
+</pre>
+      </section>
+
+      <section aria-labelledby="roadmap-h">
+        <p class="eyebrow">section · 7</p>
+        <h2 id="roadmap-h">Roadmap</h2>
+        <table aria-describedby="roadmap-h">
+          <thead><tr><th>Version</th><th>Theme</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>0.1.0</td><td>Skills + commands + templates + MCP + opt-in hooks + CI</td><td><span class="badge">shipped</span></td></tr>
+            <tr><td>0.2.0</td><td>Anthropic + OpenAI <a href="https://inkeep.com/blog/anthropic-openai-mcp-apps-extension">MCP Apps Extension</a> compatibility — htmem artifacts as <code>ui://</code> resources renderable in Claude desktop and ChatGPT side-pane</td><td>planned</td></tr>
+            <tr><td>0.3.0</td><td>Cosign signed releases + provenance attestation + automated security advisories</td><td>planned</td></tr>
+            <tr><td>0.4.0</td><td>Local sqlite full-text index over htmem artifacts (no embedding model required)</td><td>planned</td></tr>
+            <tr><td>0.5.0</td><td>First-party browser-agent integration (Stagehand / browser-use accessibility-tree extraction of htmem artifacts)</td><td>exploratory</td></tr>
+          </tbody>
+        </table>
+        <p class="muted mt-md">Suggest a feature: <a href="https://github.com/droggy992/htmem/issues">open an issue</a>.</p>
+      </section>
+
+      <section aria-labelledby="star-h" style="border: 0;">
+        <div class="star-banner">
+          <p class="eyebrow center">if this saves you a design</p>
+          <h2 id="star-h" class="center">hit ⭐ on the repo — it's the only signal the maintainer reads</h2>
+          <div class="cta-row center" style="justify-content: center;">
+            <a class="btn btn-primary" href="https://github.com/droggy992/htmem">Star droggy992/htmem</a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>htmem</strong> · v0.1.0 · <a href="https://github.com/droggy992/htmem/blob/main/LICENSE">Apache-2.0</a>
+      </div>
+      <div>
+        <a href="https://github.com/droggy992/htmem">GitHub</a> · <a href="https://github.com/droggy992/htmem/blob/main/docs/format-spec.md">Format spec</a> · <a href="https://github.com/droggy992/htmem/blob/main/docs/threat-model.md">Threat model</a> · <a href="https://github.com/droggy992/htmem/blob/main/SECURITY.md">Security policy</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>

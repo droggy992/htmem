@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/droggy992/htmem/schemas/decision.schema.json",
+  "title": "htmem decision manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "safeText": {
+      "description": "Rejects BMP-encodable zero-width / RTL-override / format / BOM chars; sanitize.py additionally strips non-BMP tag-block (U+E0000-U+E007F).",
+      "not": {
+        "pattern": "[\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u206F\\uFEFF\\uFFF9-\\uFFFB]|[\\uDB40][\\uDC00-\\uDC7F]"
+      }
+    }
+  },
+  "required": ["htmem_version", "id", "type", "title", "version", "created", "updated", "author", "summary", "status", "decision", "rationale"],
+  "properties": {
+    "htmem_version": {"type": "string", "const": "0.1"},
+    "id": {"type": "string", "pattern": "^[a-zA-Z0-9_-]{8,64}$"},
+    "type": {"type": "string", "const": "decision"},
+    "title": {"allOf": [{"$ref": "#/$defs/safeText"}, {"type": "string", "minLength": 1, "maxLength": 240}]},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][a-zA-Z0-9.-]+)?$"},
+    "created": {"type": "string", "format": "date-time"},
+    "updated": {"type": "string", "format": "date-time"},
+    "author": {"allOf": [{"$ref": "#/$defs/safeText"}, {"type": "string", "minLength": 1, "maxLength": 200}]},
+    "summary": {"allOf": [{"$ref": "#/$defs/safeText"}, {"type": "string", "minLength": 1, "maxLength": 480}]},
+    "status": {"type": "string", "enum": ["draft", "proposed", "accepted", "rejected", "superseded"]},
+    "decision": {"allOf": [{"$ref": "#/$defs/safeText"}, {"type": "string", "minLength": 1, "maxLength": 4000}]},
+    "rationale": {"allOf": [{"$ref": "#/$defs/safeText"}, {"type": "string", "minLength": 1, "maxLength": 8000}]},
+    "alternatives_considered": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "pros", "cons"],
+        "properties": {
+          "name": {"type": "string", "maxLength": 200},
+          "pros": {"type": "string", "maxLength": 2000},
+          "cons": {"type": "string", "maxLength": 2000}
+        }
+      }
+    },
+    "consequences": {"type": "string", "maxLength": 4000},
+    "evidence": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source"],
+        "properties": {
+          "source": {"type": "string", "maxLength": 200},
+          "url": {"type": "string", "format": "uri", "maxLength": 1000},
+          "quote": {"type": "string", "maxLength": 2000},
+          "date": {"type": "string", "format": "date"},
+          "confidence": {"type": "string", "enum": ["EXTRACTED", "INFERRED", "AMBIGUOUS"]}
+        }
+      }
+    },
+    "signatures": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["who", "role", "verdict", "at"],
+        "properties": {
+          "who": {"type": "string", "maxLength": 200},
+          "role": {"type": "string", "maxLength": 100},
+          "verdict": {"type": "string", "enum": ["approve", "reject", "abstain"]},
+          "at": {"type": "string", "format": "date-time"},
+          "note": {"type": "string", "maxLength": 1000}
+        }
+      }
+    },
+    "tags": {"type": "array", "maxItems": 20, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,30}$"}},
+    "related": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "relation"],
+        "properties": {
+          "id": {"type": "string", "maxLength": 200},
+          "relation": {"type": "string", "enum": ["supersedes", "superseded_by", "implements", "implemented_by", "references", "rationale_for", "blocks", "blocked_by"]}
+        }
+      }
+    },
+    "anchor": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  }
+}

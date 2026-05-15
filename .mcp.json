@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "htmem": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.py"],
+      "env": {
+        "HTMEM_PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}",
+        "HTMEM_PROJECT_DIR": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

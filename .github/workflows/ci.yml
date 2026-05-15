@@ -1,0 +1,143 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 11 * * 1'  # weekly Monday 11:17 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: smoke (validate / audit / read + regression tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Generate sample artifact
+        run: |
+          python scripts/new_memory.py memory "CI smoke test" --author "ci" --out tmp/sample.html
+      - name: Validate
+        run: python scripts/validate.py tmp/sample.html
+      - name: Audit (sample)
+        run: python scripts/audit.py tmp/sample.html --format=text
+      - name: Safe read
+        run: python scripts/read_memory.py tmp/sample.html
+      - name: Audit (examples)
+        run: python scripts/audit.py examples/ --format=text
+      - name: Anchor verify (examples)
+        run: |
+          for f in examples/*.html; do
+            python scripts/anchor.py verify "$f"
+          done
+      - name: Regression tests
+        run: |
+          for t in tests/test_*.py; do
+            echo "::group::$t"
+            python "$t" || exit 1
+            echo "::endgroup::"
+          done
+
+  gitleaks:
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  codeql:
+    name: codeql (python)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python
+      - uses: github/codeql-action/analyze@v3
+
+  semgrep:
+    name: semgrep (OWASP top ten + python)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/python
+            p/security-audit
+
+  trufflehog:
+    name: trufflehog (verified-secret history scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trufflehog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --only-verified
+
+  validate-plugin:
+    name: validate plugin schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: JSON syntax check
+        run: |
+          python - <<'PY'
+          import json, sys, pathlib
+          fails = 0
+          for p in pathlib.Path('.').rglob('*.json'):
+              if any(part.startswith('.') and part not in ('.claude-plugin', '.github') for part in p.parts):
+                  continue
+              try:
+                  json.loads(p.read_text(encoding='utf-8'))
+              except Exception as e:
+                  print(f'FAIL {p}: {e}', file=sys.stderr); fails += 1
+          sys.exit(1 if fails else 0)
+          PY
+      - name: SKILL.md frontmatter check
+        run: |
+          python - <<'PY'
+          import pathlib, sys, re
+          fails = 0
+          for p in pathlib.Path('skills').rglob('SKILL.md'):
+              text = p.read_text(encoding='utf-8')
+              if not text.startswith('---\n'):
+                  print(f'FAIL {p}: missing frontmatter', file=sys.stderr); fails += 1
+                  continue
+              fm = text.split('---\n', 2)[1]
+              if 'name:' not in fm or 'description:' not in fm:
+                  print(f'FAIL {p}: name/description missing', file=sys.stderr); fails += 1
+          sys.exit(1 if fails else 0)
+          PY

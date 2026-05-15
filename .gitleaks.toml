@@ -1,0 +1,42 @@
+title = "htmem gitleaks config"
+
+# We extend the default rule set; this file adds extra patterns specific to
+# the LLM/agent ecosystem and tightens the path allow-list.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[A-Za-z0-9_\-]{32,}'''
+tags = ["key", "anthropic"]
+
+[[rules]]
+id = "openai-secret-key"
+description = "OpenAI-style secret key"
+regex = '''sk-[A-Za-z0-9]{40,}'''
+tags = ["key", "openai"]
+
+[[rules]]
+id = "claude-code-token"
+description = "Claude Code OAuth/PAT-like token"
+regex = '''cca?_[A-Za-z0-9_\-]{32,}'''
+tags = ["key", "claude-code"]
+
+[[rules]]
+id = "github-pat-old"
+description = "GitHub PAT (legacy 40-hex)"
+regex = '''(?i)github[_-]?(?:pat|token)["'\s:=]{1,5}[0-9a-f]{40}'''
+tags = ["key", "github"]
+
+[allowlist]
+description = "test fixtures and example artifacts may contain anchor-shaped strings that aren't secrets"
+paths = [
+  '''examples/.*\.html''',
+  '''templates/.*\.html''',
+  '''docs/.*\.md''',
+]
+regexes = [
+  '''sha256:[a-f0-9]{64}''',  # htmem anchors are not secrets
+]

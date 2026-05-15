@@ -1,0 +1,6 @@
+{
+  "_comment_1": "htmem ships with hooks DISABLED by default. This file is intentionally empty.",
+  "_comment_2": "To opt in to an event hook, see hooks/README.md for vetted hook recipes and the security implications of each event type.",
+  "_comment_3": "Hook commands run unsandboxed at harness trust level — only enable hooks whose script bodies you have read and understood.",
+  "hooks": {}
+}
